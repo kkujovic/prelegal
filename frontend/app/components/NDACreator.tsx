@@ -191,7 +191,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
 
       <ol className="terms-list">
         <li>
-          <strong>Introduction.</strong> This Mutual Non-Disclosure Agreement (which incorporates
+          <strong>Introduction.</strong>{' '}This Mutual Non-Disclosure Agreement (which incorporates
           these Standard Terms and the Cover Page (defined below)) (&ldquo;<strong>MNDA</strong>
           &rdquo;) allows each party (&ldquo;<strong>Disclosing Party</strong>&rdquo;) to disclose
           or make available information in connection with the {ref(purposeVal)} which (1) the
@@ -209,7 +209,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Use and Protection of Confidential Information.</strong> The Receiving Party
+          <strong>Use and Protection of Confidential Information.</strong>{' '}The Receiving Party
           shall: (a) use Confidential Information solely for the {ref(purposeVal)}; (b) not
           disclose Confidential Information to third parties without the Disclosing Party&rsquo;s
           prior written approval, except that the Receiving Party may disclose Confidential
@@ -223,7 +223,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Exceptions.</strong> The Receiving Party&rsquo;s obligations in this MNDA do not
+          <strong>Exceptions.</strong>{' '}The Receiving Party&rsquo;s obligations in this MNDA do not
           apply to information that it can demonstrate: (a) is or becomes publicly available through
           no fault of the Receiving Party; (b) it rightfully knew or possessed prior to receipt from
           the Disclosing Party without confidentiality restrictions; (c) it rightfully obtained from
@@ -232,7 +232,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Disclosures Required by Law.</strong> The Receiving Party may disclose
+          <strong>Disclosures Required by Law.</strong>{' '}The Receiving Party may disclose
           Confidential Information to the extent required by law, regulation or regulatory
           authority, subpoena or court order, provided (to the extent legally permitted) it provides
           the Disclosing Party reasonable advance notice of the required disclosure and reasonably
@@ -241,7 +241,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Term and Termination.</strong> This MNDA commences on the{' '}
+          <strong>Term and Termination.</strong>{' '}This MNDA commences on the{' '}
           {ref(effectiveDateVal)} and expires at the end of the {ref(mndaTermVal)}. Either party
           may terminate this MNDA for any or no reason upon written notice to the other party. The
           Receiving Party&rsquo;s obligations relating to Confidential Information will survive for
@@ -249,7 +249,7 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Return or Destruction of Confidential Information.</strong> Upon expiration or
+          <strong>Return or Destruction of Confidential Information.</strong>{' '}Upon expiration or
           termination of this MNDA or upon the Disclosing Party&rsquo;s earlier request, the
           Receiving Party will: (a) cease using Confidential Information; (b) promptly after the
           Disclosing Party&rsquo;s written request, destroy all Confidential Information in the
@@ -262,19 +262,19 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Proprietary Rights.</strong> The Disclosing Party retains all of its intellectual
+          <strong>Proprietary Rights.</strong>{' '}The Disclosing Party retains all of its intellectual
           property and other rights in its Confidential Information and its disclosure to the
           Receiving Party grants no license under such rights.
         </li>
 
         <li>
-          <strong>Disclaimer.</strong> ALL CONFIDENTIAL INFORMATION IS PROVIDED &ldquo;AS IS&rdquo;,
+          <strong>Disclaimer.</strong>{' '}ALL CONFIDENTIAL INFORMATION IS PROVIDED &ldquo;AS IS&rdquo;,
           WITH ALL FAULTS, AND WITHOUT WARRANTIES, INCLUDING THE IMPLIED WARRANTIES OF TITLE,
           MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
         </li>
 
         <li>
-          <strong>Governing Law and Jurisdiction.</strong> This MNDA and all matters relating
+          <strong>Governing Law and Jurisdiction.</strong>{' '}This MNDA and all matters relating
           hereto are governed by, and construed in accordance with, the laws of the State of{' '}
           {ref(govLawVal)}, without regard to the conflict of laws provisions of such{' '}
           {ref(govLawVal)}. Any legal suit, action, or proceeding relating to this MNDA must be
@@ -284,14 +284,14 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
         </li>
 
         <li>
-          <strong>Equitable Relief.</strong> A breach of this MNDA may cause irreparable harm for
+          <strong>Equitable Relief.</strong>{' '}A breach of this MNDA may cause irreparable harm for
           which monetary damages are an insufficient remedy. Upon a breach of this MNDA, the
           Disclosing Party is entitled to seek appropriate equitable relief, including an
           injunction, in addition to its other remedies.
         </li>
 
         <li>
-          <strong>General.</strong> Neither party has an obligation under this MNDA to disclose
+          <strong>General.</strong>{' '}Neither party has an obligation under this MNDA to disclose
           Confidential Information to the other or proceed with any proposed transaction. Neither
           party may assign this MNDA without the prior written consent of the other party, except
           that either party may assign this MNDA in connection with a merger, reorganization,
