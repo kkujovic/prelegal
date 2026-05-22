@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Mutual NDA",
+    "description": "Common Paper standard Mutual Non-Disclosure Agreement for protecting confidential information shared between two parties.",
+    "filename": "templates/Mutual-NDA.md"
+  },
+  {
+    "name": "Mutual NDA Cover Page",
+    "description": "Cover page template for the Common Paper Mutual Non-Disclosure Agreement, containing the key deal terms to be filled in.",
+    "filename": "templates/Mutual-NDA-coverpage.md"
+  },
+  {
+    "name": "Cloud Service Agreement",
+    "description": "Common Paper standard Cloud Service Agreement (CSA) governing the provision of cloud-based software services to customers.",
+    "filename": "templates/CSA.md"
+  },
+  {
+    "name": "Design Partner Agreement",
+    "description": "Common Paper standard Design Partner Agreement for early-stage customer relationships involving product feedback and co-development.",
+    "filename": "templates/design-partner-agreement.md"
+  },
+  {
+    "name": "Service Level Agreement",
+    "description": "Common Paper standard Service Level Agreement (SLA) defining uptime commitments and remedies for cloud service providers.",
+    "filename": "templates/sla.md"
+  },
+  {
+    "name": "Professional Services Agreement",
+    "description": "Common Paper standard Professional Services Agreement (PSA) governing the delivery of professional and consulting services.",
+    "filename": "templates/psa.md"
+  },
+  {
+    "name": "Data Processing Agreement",
+    "description": "Common Paper standard Data Processing Agreement (DPA) for GDPR and privacy-compliant handling of personal data by service providers.",
+    "filename": "templates/DPA.md"
+  },
+  {
+    "name": "Software License Agreement",
+    "description": "Common Paper standard Software License Agreement governing the licensing of software products to end users or businesses.",
+    "filename": "templates/Software-License-Agreement.md"
+  },
+  {
+    "name": "Partnership Agreement",
+    "description": "Common Paper standard Partnership Agreement for formalising commercial partnerships, referral arrangements, and joint go-to-market relationships.",
+    "filename": "templates/Partnership-Agreement.md"
+  },
+  {
+    "name": "Pilot Agreement",
+    "description": "Common Paper standard Pilot Agreement for time-limited product evaluations before a full commercial subscription.",
+    "filename": "templates/Pilot-Agreement.md"
+  },
+  {
+    "name": "Business Associate Agreement",
+    "description": "Common Paper standard Business Associate Agreement (BAA) for HIPAA-compliant handling of protected health information by service providers.",
+    "filename": "templates/BAA.md"
+  },
+  {
+    "name": "AI Addendum",
+    "description": "Common Paper standard AI Addendum governing the use of artificial intelligence features within a cloud service, including data usage and model training restrictions.",
+    "filename": "templates/AI-Addendum.md"
+  }
+]
