@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
+import { formatDate, placeholder, mndaTermLabel, confidentialityTermLabel } from '@/lib/ndaUtils'
 
 interface NDAData {
   purpose: string
@@ -21,11 +22,9 @@ interface NDAData {
   party2Contact: string
 }
 
-const today = new Date().toISOString().split('T')[0]
-
 const DEFAULT_DATA: NDAData = {
   purpose: 'Evaluating whether to enter into a business relationship with the other party.',
-  effectiveDate: today,
+  effectiveDate: '',
   mndaTermType: 'fixed',
   mndaTermYears: '1',
   confidentialityTermType: 'fixed',
@@ -42,26 +41,9 @@ const DEFAULT_DATA: NDAData = {
   party2Contact: '',
 }
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '[Effective Date]'
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function placeholder(val: string, fallback: string): string {
-  return val.trim() ? val.trim() : fallback
-}
-
 function CoverPagePreview({ d }: { d: NDAData }) {
-  const mndaTerm =
-    d.mndaTermType === 'fixed'
-      ? `Expires ${placeholder(d.mndaTermYears, '1')} year(s) from Effective Date.`
-      : 'Continues until terminated in accordance with the terms of the MNDA.'
-
-  const confTerm =
-    d.confidentialityTermType === 'fixed'
-      ? `${placeholder(d.confidentialityTermYears, '1')} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
-      : 'In perpetuity.'
+  const mndaTerm = mndaTermLabel(d.mndaTermType, d.mndaTermYears)
+  const confTerm = confidentialityTermLabel(d.confidentialityTermType, d.confidentialityTermYears)
 
   return (
     <div className="document-section">
@@ -356,15 +338,17 @@ function FormField({
       <label className="form-label">
         {label}
         {hint && <span className="form-hint">{hint}</span>}
+        {children}
       </label>
-      {children}
     </div>
   )
 }
 
 export default function NDACreator() {
-  const [data, setData] = useState<NDAData>(DEFAULT_DATA)
-  const previewRef = useRef<HTMLDivElement>(null)
+  const [data, setData] = useState<NDAData>(() => ({
+    ...DEFAULT_DATA,
+    effectiveDate: new Date().toISOString().split('T')[0],
+  }))
 
   function update(field: keyof NDAData, value: string) {
     setData((prev) => ({ ...prev, [field]: value }))
@@ -589,7 +573,7 @@ export default function NDACreator() {
         </aside>
 
         {/* Preview panel */}
-        <main className="preview-panel" ref={previewRef}>
+        <main className="preview-panel">
           <div className="document-paper">
             <CoverPagePreview d={data} />
             <hr className="doc-divider" />
