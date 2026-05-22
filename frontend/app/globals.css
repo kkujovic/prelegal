@@ -1,0 +1,359 @@
+@import "tailwindcss";
+
+/* ── App shell ── */
+
+.nda-creator {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #f3f4f6;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.app-header {
+  background: #1e293b;
+  color: white;
+  padding: 0.875rem 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: white;
+}
+
+.app-subtitle {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.1rem;
+}
+
+.download-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.download-btn:hover {
+  background: #2563eb;
+}
+
+/* ── Two-column layout ── */
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Form panel ── */
+
+.form-panel {
+  width: 340px;
+  flex-shrink: 0;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.875rem;
+}
+
+.form-field {
+  margin-bottom: 0.875rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.3rem;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-top: 0.1rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.82rem;
+  color: #111827;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.form-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.inline-number {
+  width: 3rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0.15rem 0.3rem;
+  font-size: 0.8rem;
+  text-align: center;
+}
+.inline-number:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* ── Preview panel ── */
+
+.preview-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  background: #f3f4f6;
+}
+
+.document-paper {
+  background: white;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3rem 3.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
+  border-radius: 4px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.875rem;
+  color: #111;
+  line-height: 1.6;
+}
+
+/* ── Document styles ── */
+
+.doc-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.usage-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #475569;
+  margin-bottom: 1.5rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.cover-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.cover-table tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+.cover-table tr:last-child {
+  border-bottom: none;
+}
+
+.field-label {
+  width: 38%;
+  padding: 0.6rem 0.75rem 0.6rem 0;
+  vertical-align: top;
+  color: #374151;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: #9ca3af;
+  margin-top: 0.15rem;
+  font-weight: 400;
+}
+
+.field-value {
+  padding: 0.6rem 0;
+  vertical-align: top;
+  color: #111;
+}
+
+.signing-intro {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.sig-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 1.25rem;
+}
+
+.sig-table th,
+.sig-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  min-height: 2rem;
+}
+
+.sig-table thead th {
+  background: #f1f5f9;
+  font-weight: 700;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.sig-table tbody tr td:first-child {
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #475569;
+  width: 25%;
+}
+
+.sig-table tbody td {
+  min-height: 1.8rem;
+}
+
+.cc-notice {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  margin-top: 1rem;
+}
+
+.doc-divider {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 2rem 0;
+}
+
+.terms-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.terms-list {
+  padding-left: 1.5rem;
+  counter-reset: none;
+}
+
+.terms-list > li {
+  margin-bottom: 0.875rem;
+  line-height: 1.65;
+}
+
+.coverpage-ref {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 0 3px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* ── Print styles ── */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .nda-creator {
+    height: auto;
+    overflow: visible;
+    background: white;
+  }
+
+  .main-layout {
+    display: block;
+    overflow: visible;
+  }
+
+  .preview-panel {
+    overflow: visible;
+    padding: 0;
+    background: white;
+  }
+
+  .document-paper {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .coverpage-ref {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+  }
+}
