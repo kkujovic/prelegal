@@ -117,3 +117,7 @@ media/
 *.key
 *.cert
 secrets/
+
+# Claude Code (personal local settings)
+.claude/settings.local.json
+.claude/memory/
