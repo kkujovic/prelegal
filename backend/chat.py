@@ -1,50 +1,31 @@
+import json
 import os
 from typing import Literal
 
 from litellm import completion
 from pydantic import BaseModel
 
+from document_configs import get_config, SUPPORTED_DOCUMENT_NAMES
+
 MODEL = "openrouter/openai/gpt-oss-120b"
 EXTRA_BODY = {"provider": {"order": ["cerebras"]}}
 
-SYSTEM_PROMPT = """You are a friendly legal assistant helping users create a Mutual Non-Disclosure Agreement (MNDA).
+SYSTEM_PROMPT_TEMPLATE = """You are a friendly legal assistant helping users create a {doc_name}.
 
 Your job is to collect the information needed to fill in the agreement through natural conversation.
 Ask one or two questions at a time. Be concise and helpful. Explain what each field means when asked.
 
 Fields to collect:
-- purpose: How the parties intend to use each other's confidential information
-- effectiveDate: When the agreement starts (YYYY-MM-DD format; suggest today if not specified)
-- mndaTermType: "fixed" (expires after N years) or "indefinite" (continues until terminated)
-- mndaTermYears: Number of years (1-10) if mndaTermType is "fixed"
-- confidentialityTermType: "fixed" (protected for N years) or "perpetual" (protected forever)
-- confidentialityTermYears: Number of years (1-10) if confidentialityTermType is "fixed"
-- governingLaw: The US state whose laws govern the agreement (e.g. "Delaware")
-- jurisdiction: The courts where disputes are resolved (e.g. "courts in New Castle County, Delaware")
-- party1Company, party1Name, party1Title, party1Contact: First party's details
-- party2Company, party2Name, party2Title, party2Contact: Second party's details
+{field_list}
 
-As users provide information, populate the updated_data with ALL known values including previously collected fields.
-Unknown fields stay as empty strings or their defaults. Never lose previously collected data."""
+As users provide information, populate updated_fields with ALL known values including previously collected fields.
+Unknown fields stay as empty strings. Never lose previously collected data.
 
+If the user asks for a document type you cannot help with, explain that it is not currently supported and offer
+the closest available option from this list: {supported_docs}.
 
-class NDAData(BaseModel):
-    purpose: str = "Evaluating whether to enter into a business relationship with the other party."
-    effectiveDate: str = ""
-    mndaTermType: Literal["fixed", "indefinite"] = "fixed"
-    mndaTermYears: str = "1"
-    confidentialityTermType: Literal["fixed", "perpetual"] = "fixed"
-    confidentialityTermYears: str = "1"
-    governingLaw: str = ""
-    jurisdiction: str = ""
-    party1Company: str = ""
-    party1Name: str = ""
-    party1Title: str = ""
-    party1Contact: str = ""
-    party2Company: str = ""
-    party2Name: str = ""
-    party2Title: str = ""
-    party2Contact: str = ""
+Current document data:
+{current_fields_json}"""
 
 
 class ChatMessage(BaseModel):
@@ -53,18 +34,33 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
+    document_type: str
     messages: list[ChatMessage]
-    current_data: NDAData
+    fields: dict[str, str]
 
 
 class ChatResponse(BaseModel):
     reply: str
-    updated_data: NDAData
+    updated_fields: dict[str, str]
 
 
 def chat_completion(request: ChatRequest) -> ChatResponse:
-    current_json = request.current_data.model_dump_json(indent=2)
-    system = f"{SYSTEM_PROMPT}\n\nCurrent NDA data:\n{current_json}"
+    config = get_config(request.document_type)
+    if config is None:
+        return ChatResponse(
+            reply=f"I don't have a template for '{request.document_type}'. I can help you with: {', '.join(SUPPORTED_DOCUMENT_NAMES)}. Which would you like?",
+            updated_fields=request.fields,
+        )
+
+    field_list = "\n".join(
+        f"- {f.key}: {f.description}" for f in config.fields
+    )
+    system = SYSTEM_PROMPT_TEMPLATE.format(
+        doc_name=config.name,
+        field_list=field_list,
+        supported_docs=", ".join(SUPPORTED_DOCUMENT_NAMES),
+        current_fields_json=json.dumps(request.fields, indent=2),
+    )
 
     messages = [{"role": "system", "content": system}]
     for msg in request.messages:
@@ -78,4 +74,10 @@ def chat_completion(request: ChatRequest) -> ChatResponse:
         extra_body=EXTRA_BODY,
         api_key=os.environ["OPENROUTER_API_KEY"],
     )
-    return ChatResponse.model_validate_json(response.choices[0].message.content)
+    result = ChatResponse.model_validate_json(response.choices[0].message.content)
+
+    # Merge: keep existing fields for any key the LLM dropped; strip unknown keys.
+    valid_keys = {f.key for f in config.fields}
+    merged = {**request.fields, **result.updated_fields}
+    result.updated_fields = {k: v for k, v in merged.items() if k in valid_keys}
+    return result
