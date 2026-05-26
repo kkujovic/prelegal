@@ -1,11 +1,41 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NDACreator from '@/app/components/NDACreator'
 
-// window.print is not available in jsdom
+const defaultUpdatedData = {
+  purpose: 'Evaluating whether to enter into a business relationship with the other party.',
+  effectiveDate: '',
+  mndaTermType: 'fixed',
+  mndaTermYears: '1',
+  confidentialityTermType: 'fixed',
+  confidentialityTermYears: '1',
+  governingLaw: '',
+  jurisdiction: '',
+  party1Company: '',
+  party1Name: '',
+  party1Title: '',
+  party1Contact: '',
+  party2Company: '',
+  party2Name: '',
+  party2Title: '',
+  party2Contact: '',
+}
+
+function mockFetch(reply = 'Got it, thanks!', overrides = {}) {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ reply, updated_data: { ...defaultUpdatedData, ...overrides } }),
+  } as Response)
+}
+
 beforeEach(() => {
   Object.defineProperty(window, 'print', { value: jest.fn(), writable: true })
+  mockFetch()
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
 })
 
 describe('NDACreator', () => {
@@ -31,73 +61,9 @@ describe('NDACreator', () => {
     expect(screen.getByRole('heading', { name: /standard terms/i })).toBeInTheDocument()
   })
 
-  it('updates preview when party 1 company is entered', async () => {
-    const user = userEvent.setup()
-    render(<NDACreator />)
-
-    const allParty1Inputs = screen.getAllByPlaceholderText(/acme/i)
-    await user.clear(allParty1Inputs[0])
-    await user.type(allParty1Inputs[0], 'TestCorp')
-
-    expect(screen.getByText('TestCorp')).toBeInTheDocument()
-  })
-
-  it('updates preview when party 2 company is entered', async () => {
-    const user = userEvent.setup()
-    render(<NDACreator />)
-
-    const input = screen.getByPlaceholderText('Globex Inc')
-    await user.clear(input)
-    await user.type(input, 'WidgetCo')
-
-    expect(screen.getByText('WidgetCo')).toBeInTheDocument()
-  })
-
-  it('toggles MNDA term to indefinite and updates preview', async () => {
-    const user = userEvent.setup()
-    const { container } = render(<NDACreator />)
-
-    const indefiniteRadio = container.querySelector<HTMLInputElement>(
-      '[name="mndaTermType"][value="indefinite"]'
-    )!
-    await user.click(indefiniteRadio)
-
-    expect(
-      screen.getByText(/continues until terminated in accordance/i)
-    ).toBeInTheDocument()
-  })
-
-  it('toggles confidentiality term to perpetual and updates preview', async () => {
-    const user = userEvent.setup()
-    const { container } = render(<NDACreator />)
-
-    const perpetualRadio = container.querySelector<HTMLInputElement>(
-      '[name="confidentialityTermType"][value="perpetual"]'
-    )!
-    await user.click(perpetualRadio)
-
-    expect(screen.getByText('In perpetuity.')).toBeInTheDocument()
-  })
-
-  it('shows placeholder in preview when governing law is empty', () => {
-    render(<NDACreator />)
-    expect(screen.getAllByText('[Governing Law]').length).toBeGreaterThan(0)
-  })
-
-  it('shows governing law value in preview after input', async () => {
-    const user = userEvent.setup()
-    render(<NDACreator />)
-
-    const input = screen.getByPlaceholderText(/e\.g\. delaware/i)
-    await user.type(input, 'California')
-
-    expect(screen.getAllByText('California').length).toBeGreaterThan(0)
-  })
-
   it('calls window.print when Download PDF is clicked', async () => {
     const user = userEvent.setup()
     render(<NDACreator />)
-
     await user.click(screen.getByRole('button', { name: /download pdf/i }))
     expect(window.print).toHaveBeenCalledTimes(1)
   })
@@ -110,5 +76,105 @@ describe('NDACreator', () => {
       day: 'numeric',
     })
     expect(screen.getAllByText(today).length).toBeGreaterThan(0)
+  })
+
+  it('shows initial AI greeting in chat panel', () => {
+    render(<NDACreator />)
+    expect(
+      screen.getByText(/I'll help you create a Mutual Non-Disclosure Agreement/i)
+    ).toBeInTheDocument()
+  })
+
+  it('renders chat input and send button', () => {
+    render(<NDACreator />)
+    expect(screen.getByPlaceholderText(/type a message/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument()
+  })
+
+  it('send button is disabled when input is empty', () => {
+    render(<NDACreator />)
+    expect(screen.getByRole('button', { name: /send/i })).toBeDisabled()
+  })
+
+  it('send button is enabled when input has text', async () => {
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Hello')
+    expect(screen.getByRole('button', { name: /send/i })).not.toBeDisabled()
+  })
+
+  it('appends user message to chat on send', async () => {
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Acme and Globex are partners')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+    expect(screen.getByText('Acme and Globex are partners')).toBeInTheDocument()
+  })
+
+  it('shows AI reply after sending a message', async () => {
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Hello')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Got it, thanks!')).toBeInTheDocument()
+    })
+  })
+
+  it('clears the input after sending', async () => {
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    const input = screen.getByPlaceholderText(/type a message/i)
+    await user.type(input, 'Hello')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+    expect(input).toHaveValue('')
+  })
+
+  it('sends NDA data and messages to the chat API', async () => {
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Technology partnership')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1))
+
+    const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('/api/chat')
+    expect(options.method).toBe('POST')
+
+    const body = JSON.parse(options.body)
+    expect(body.messages).toBeInstanceOf(Array)
+    expect(body.messages.at(-1)).toMatchObject({ role: 'user', content: 'Technology partnership' })
+    expect(body.current_data).toBeDefined()
+  })
+
+  it('updates document preview with data returned from API', async () => {
+    mockFetch('Noted!', {
+      governingLaw: 'Delaware',
+      jurisdiction: 'courts in New Castle County, Delaware',
+      party1Company: 'Acme Corp',
+    })
+
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Acme Corp, Delaware')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument()
+    })
+    expect(screen.getAllByText('Delaware').length).toBeGreaterThan(0)
+  })
+
+  it('shows error message in chat when API call fails', async () => {
+    global.fetch = jest.fn().mockRejectedValueOnce(new Error('Network error'))
+    const user = userEvent.setup()
+    render(<NDACreator />)
+    await user.type(screen.getByPlaceholderText(/type a message/i), 'Hello')
+    await user.click(screen.getByRole('button', { name: /send/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+    })
   })
 })

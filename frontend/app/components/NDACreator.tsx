@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { formatDate, placeholder, mndaTermLabel, confidentialityTermLabel } from '@/lib/ndaUtils'
 
 interface NDAData {
@@ -22,7 +24,12 @@ interface NDAData {
   party2Contact: string
 }
 
-const DEFAULT_DATA: NDAData = {
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+const INITIAL_NDA: NDAData = {
   purpose: 'Evaluating whether to enter into a business relationship with the other party.',
   effectiveDate: '',
   mndaTermType: 'fixed',
@@ -40,6 +47,9 @@ const DEFAULT_DATA: NDAData = {
   party2Title: '',
   party2Contact: '',
 }
+
+const INITIAL_GREETING =
+  "Hi! I'll help you create a Mutual Non-Disclosure Agreement. Let's start — what's the purpose of this NDA? For example, are the parties evaluating a business partnership, discussing a technology collaboration, or something else?"
 
 function CoverPagePreview({ d }: { d: NDAData }) {
   const mndaTerm = mndaTermLabel(d.mndaTermType, d.mndaTermYears)
@@ -324,255 +334,113 @@ function StandardTermsPreview({ d }: { d: NDAData }) {
   )
 }
 
-function FormField({
-  label,
-  hint,
-  children,
-}: {
-  label: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="form-field">
-      <label className="form-label">
-        {label}
-        {hint && <span className="form-hint">{hint}</span>}
-        {children}
-      </label>
-    </div>
-  )
-}
-
 export default function NDACreator() {
   const [data, setData] = useState<NDAData>(() => ({
-    ...DEFAULT_DATA,
+    ...INITIAL_NDA,
     effectiveDate: new Date().toISOString().split('T')[0],
   }))
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: INITIAL_GREETING },
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  function update(field: keyof NDAData, value: string) {
-    setData((prev) => ({ ...prev, [field]: value }))
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  async function sendMessage() {
+    const text = input.trim()
+    if (!text || loading) return
+
+    const userMsg: Message = { role: 'user', content: text }
+    const nextMessages = [...messages, userMsg]
+    setMessages(nextMessages)
+    setInput('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: nextMessages, current_data: data }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const result = await res.json()
+      setMessages(prev => [...prev, { role: 'assistant', content: result.reply }])
+      setData(result.updated_data)
+    } catch {
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'Something went wrong. Please try again.' },
+      ])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  function handlePrint() {
-    window.print()
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
   }
 
   return (
     <div className="nda-creator">
-      {/* Header */}
       <header className="app-header no-print">
         <div className="header-content">
           <div>
             <h1 className="app-title">Mutual NDA Creator</h1>
-            <p className="app-subtitle">
-              Fill in the key terms — the completed agreement updates in real time.
-            </p>
+            <p className="app-subtitle">Chat with the AI to fill in your agreement.</p>
           </div>
-          <button onClick={handlePrint} className="download-btn">
+          <button onClick={() => window.print()} className="download-btn">
             Download PDF
           </button>
         </div>
       </header>
 
       <div className="main-layout">
-        {/* Form panel */}
-        <aside className="form-panel no-print">
-          <div className="form-section">
-            <h2 className="section-heading">Agreement Terms</h2>
-
-            <FormField label="Purpose" hint="How Confidential Information may be used">
-              <textarea
-                className="form-textarea"
-                value={data.purpose}
-                onChange={(e) => update('purpose', e.target.value)}
-                rows={3}
-              />
-            </FormField>
-
-            <FormField label="Effective Date">
-              <input
-                type="date"
-                className="form-input"
-                value={data.effectiveDate}
-                onChange={(e) => update('effectiveDate', e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="MNDA Term" hint="Length of this agreement">
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="mndaTermType"
-                    value="fixed"
-                    checked={data.mndaTermType === 'fixed'}
-                    onChange={() => update('mndaTermType', 'fixed')}
-                  />
-                  Expires after
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    className="inline-number"
-                    value={data.mndaTermYears}
-                    onChange={(e) => update('mndaTermYears', e.target.value)}
-                    disabled={data.mndaTermType !== 'fixed'}
-                  />
-                  year(s) from Effective Date
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="mndaTermType"
-                    value="indefinite"
-                    checked={data.mndaTermType === 'indefinite'}
-                    onChange={() => update('mndaTermType', 'indefinite')}
-                  />
-                  Continues until terminated
-                </label>
+        <aside className="chat-panel no-print">
+          <div className="chat-messages">
+            {messages.map((msg, i) => (
+              <div key={i} className={`chat-message chat-message--${msg.role}`}>
+                <div className="chat-bubble">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                </div>
               </div>
-            </FormField>
-
-            <FormField label="Term of Confidentiality" hint="How long information stays protected">
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="confidentialityTermType"
-                    value="fixed"
-                    checked={data.confidentialityTermType === 'fixed'}
-                    onChange={() => update('confidentialityTermType', 'fixed')}
-                  />
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    className="inline-number"
-                    value={data.confidentialityTermYears}
-                    onChange={(e) => update('confidentialityTermYears', e.target.value)}
-                    disabled={data.confidentialityTermType !== 'fixed'}
-                  />
-                  year(s) from Effective Date
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="confidentialityTermType"
-                    value="perpetual"
-                    checked={data.confidentialityTermType === 'perpetual'}
-                    onChange={() => update('confidentialityTermType', 'perpetual')}
-                  />
-                  In perpetuity
-                </label>
+            ))}
+            {loading && (
+              <div className="chat-message chat-message--assistant">
+                <div className="chat-bubble chat-bubble--loading">
+                  <span className="dot" /><span className="dot" /><span className="dot" />
+                </div>
               </div>
-            </FormField>
-
-            <FormField label="Governing Law">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g. Delaware"
-                value={data.governingLaw}
-                onChange={(e) => update('governingLaw', e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Jurisdiction">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g. courts located in New Castle, DE"
-                value={data.jurisdiction}
-                onChange={(e) => update('jurisdiction', e.target.value)}
-              />
-            </FormField>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Party 1 */}
-          <div className="form-section">
-            <h2 className="section-heading">Party 1</h2>
-            <FormField label="Company">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Acme Corp"
-                value={data.party1Company}
-                onChange={(e) => update('party1Company', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Signatory Name">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Jane Smith"
-                value={data.party1Name}
-                onChange={(e) => update('party1Name', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Title">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="CEO"
-                value={data.party1Title}
-                onChange={(e) => update('party1Title', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Notice Address (email or postal)">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="jane@acme.com"
-                value={data.party1Contact}
-                onChange={(e) => update('party1Contact', e.target.value)}
-              />
-            </FormField>
-          </div>
-
-          {/* Party 2 */}
-          <div className="form-section">
-            <h2 className="section-heading">Party 2</h2>
-            <FormField label="Company">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Globex Inc"
-                value={data.party2Company}
-                onChange={(e) => update('party2Company', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Signatory Name">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="John Doe"
-                value={data.party2Name}
-                onChange={(e) => update('party2Name', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Title">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="General Counsel"
-                value={data.party2Title}
-                onChange={(e) => update('party2Title', e.target.value)}
-              />
-            </FormField>
-            <FormField label="Notice Address (email or postal)">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="john@globex.com"
-                value={data.party2Contact}
-                onChange={(e) => update('party2Contact', e.target.value)}
-              />
-            </FormField>
+          <div className="chat-input-row">
+            <textarea
+              className="chat-input"
+              placeholder="Type a message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={2}
+              disabled={loading}
+            />
+            <button
+              className="chat-send-btn"
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+            >
+              Send
+            </button>
           </div>
         </aside>
 
-        {/* Preview panel */}
         <main className="preview-panel">
           <div className="document-paper">
             <CoverPagePreview d={data} />
