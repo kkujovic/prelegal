@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from chat import ChatRequest, ChatResponse, chat_completion
 from database import init_db
+from document_configs import get_config
 
 ROOT = Path(__file__).parent.parent
 _catalog: list = []
@@ -35,6 +36,17 @@ def health():
 @app.get("/api/catalog")
 def catalog():
     return _catalog
+
+
+@app.get("/api/fields/{document_type:path}")
+def fields(document_type: str):
+    config = get_config(document_type)
+    if config is None:
+        raise HTTPException(status_code=404, detail=f"Unknown document type: {document_type}")
+    return [
+        {"key": f.key, "label": f.label, "description": f.description, "default": f.default}
+        for f in config.fields
+    ]
 
 
 @app.post("/api/chat", response_model=ChatResponse)
