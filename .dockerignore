@@ -1,0 +1,23 @@
+.git
+.gitignore
+.idea
+.vscode
+.claude
+CLAUDE.md
+frontend/AGENTS.md
+frontend/CLAUDE.md
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+backend/.venv
+backend/prelegal.db
+
+# Node artifacts
+frontend/node_modules
+frontend/.next
+frontend/.swc
+frontend/out
+
+# OS
+.DS_Store

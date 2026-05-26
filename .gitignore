@@ -102,8 +102,9 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
-# Docker
-.dockerignore
+# Backend static build artifact (populated during Docker build)
+backend/static/
+
 
 # Alembic migrations (keep structure, ignore generated)
 # alembic/versions/
