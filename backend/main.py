@@ -2,13 +2,17 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
+from chat import ChatRequest, ChatResponse, chat_completion
 from database import init_db
 
 ROOT = Path(__file__).parent.parent
 _catalog: list = []
+
+load_dotenv(ROOT / ".env")
 
 
 @asynccontextmanager
@@ -31,6 +35,14 @@ def health():
 @app.get("/api/catalog")
 def catalog():
     return _catalog
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
+    try:
+        return chat_completion(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 static_dir = Path(__file__).parent / "static"
