@@ -391,6 +391,14 @@ export default function DocumentCreator({ document: doc, token, documentId: init
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  // Focus input after loading finishes; defer so the disabled attr is removed first
+  useEffect(() => {
+    if (!loading) {
+      const id = setTimeout(() => inputRef.current?.focus(), 50)
+      return () => clearTimeout(id)
+    }
+  }, [loading])
+
   async function sendMessage() {
     const text = input.trim()
     if (!text || loading) return
@@ -423,7 +431,6 @@ export default function DocumentCreator({ document: doc, token, documentId: init
       ])
     } finally {
       setLoading(false)
-      inputRef.current?.focus()
     }
   }
 
