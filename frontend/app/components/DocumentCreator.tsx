@@ -339,6 +339,7 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Load field definitions and initialize defaults
   useEffect(() => {
@@ -403,6 +404,7 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
       ])
     } finally {
       setLoading(false)
+      inputRef.current?.focus()
     }
   }
 
@@ -454,6 +456,7 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
 
           <div className="chat-input-row">
             <textarea
+              ref={inputRef}
               className="chat-input"
               placeholder="Type a message..."
               value={input}
