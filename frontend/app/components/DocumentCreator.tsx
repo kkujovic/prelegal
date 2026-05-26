@@ -323,13 +323,16 @@ function getInitialGreeting(documentName: string): string {
 
 interface Props {
   document: CatalogEntry
+  token: string
+  documentId?: number
+  initialFields?: Record<string, string>
   onBack: () => void
 }
 
 const IS_NDA = (name: string) => name === 'Mutual NDA' || name === 'Mutual NDA Cover Page'
 
-export default function DocumentCreator({ document: doc, onBack }: Props) {
-  const [fields, setFields] = useState<Record<string, string>>({})
+export default function DocumentCreator({ document: doc, token, documentId: initialDocId, initialFields, onBack }: Props) {
+  const [fields, setFields] = useState<Record<string, string>>(initialFields ?? {})
   const [fieldDefs, setFieldDefs] = useState<FieldDef[]>([])
   const [fieldsLoading, setFieldsLoading] = useState(true)
   const [fieldsError, setFieldsError] = useState(false)
@@ -338,8 +341,22 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [documentId, setDocumentId] = useState<number | undefined>(initialDocId)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Create a document record on the server if this is a new document
+  useEffect(() => {
+    if (initialDocId) return
+    fetch('/api/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ document_type: doc.name }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setDocumentId(data.id) })
+      .catch(() => {})
+  }, [doc.name, token, initialDocId])
 
   // Load field definitions and initialize defaults
   useEffect(() => {
@@ -353,6 +370,7 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
       })
       .then((defs: FieldDef[]) => {
         setFieldDefs(defs)
+        if (initialFields && Object.keys(initialFields).length > 0) return
         const initial: Record<string, string> = {}
         for (const f of defs) {
           initial[f.key] = f.default
@@ -367,7 +385,7 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
       })
       .catch(() => setFieldsError(true))
       .finally(() => setFieldsLoading(false))
-  }, [doc.name])
+  }, [doc.name, initialFields])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -386,11 +404,12 @@ export default function DocumentCreator({ document: doc, onBack }: Props) {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           document_type: doc.name,
           messages: nextMessages,
           fields,
+          document_id: documentId,
         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
